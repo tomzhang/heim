@@ -98,6 +98,11 @@ func (gs *GrantManager) Authority(
 		return nil, nil, nil, err
 	}
 
+	if sourceCapability == nil {
+		fmt.Printf("sourceCapability: nil\n")
+		return nil, nil, nil, ErrAccessDenied
+	}
+
 	public = new(json.RawMessage)
 	if publicBytes := sourceCapability.PublicPayload(); publicBytes != nil {
 		*public = json.RawMessage(publicBytes)
@@ -177,8 +182,10 @@ func (gs *GrantManager) AccountCapability(
 	c, err := gs.Capabilities.Get(ctx, cid)
 	if err != nil {
 		if err == ErrCapabilityNotFound {
+			fmt.Printf("AccountCapability: not found\n")
 			return nil, nil
 		}
+		fmt.Printf("AccountCapability: error: %s\n", err)
 		return nil, err
 	}
 	return &security.PublicKeyCapability{Capability: c}, nil
