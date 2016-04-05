@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"image/png"
+	"os"
+	"runtime"
 	"time"
 
 	"golang.org/x/net/context"
@@ -248,6 +250,17 @@ func (s *session) handleSendCommand(cmd *proto.SendCommand) *response {
 }
 
 func (s *session) handleGrantAccessCommand(cmd *proto.GrantAccessCommand) *response {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("recovered panic: %#v\n", r)
+			b := make([]byte, 65536)
+			runtime.Stack(b, false)
+			fmt.Println("stack trace:")
+			os.Stdout.Write(b)
+			fmt.Println()
+		}
+	}()
+
 	mkp := s.client.Authorization.ManagerKeyPair
 	if s.managedRoom == nil || mkp == nil {
 		return &response{err: proto.ErrAccessDenied}
